@@ -1,0 +1,5 @@
+package metamodel
+
+annotation Deep {
+	
+}
