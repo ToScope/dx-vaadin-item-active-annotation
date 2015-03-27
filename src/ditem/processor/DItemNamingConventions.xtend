@@ -11,6 +11,7 @@ class DItemNamingConventions {
 	public static val item = "Item"
 	public static val beanName = "bean"
 
+
 	def static String getter(String field) {
 		return '''get«field.toFirstUpper»'''
 	}

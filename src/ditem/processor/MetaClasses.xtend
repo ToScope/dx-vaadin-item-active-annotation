@@ -1,25 +1,14 @@
 package ditem.processor
 
-import metamodel.AbstractReference
-import metamodel.Deep
-import metamodel.MetaModelOf
-import org.eclipse.xtend.lib.macro.AbstractClassProcessor
-import org.eclipse.xtend.lib.macro.Active
-import org.eclipse.xtend.lib.macro.CodeGenerationParticipant
+import metamodel.classes.FieldReference
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
+import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.NamedElement
-import org.eclipse.xtend.lib.macro.declaration.Visibility
 
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.getPackage
-import static extension de.tf.xtend.util.AnnotationProcessorExtensions.operator_equals
-import org.eclipse.xtend.lib.macro.declaration.TypeReference
-import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
-import metamodel.flat.MetaModel
-import java.util.List
-import metamodel.classes.FieldReference
 
 class MetaModelClassesProcessor  {
 

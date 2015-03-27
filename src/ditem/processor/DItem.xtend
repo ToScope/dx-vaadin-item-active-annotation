@@ -76,13 +76,6 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		return !isStatic
 	}
 
-	def static getter(NamedElement field) {
-		"get" + field.simpleName.toFirstUpper
-	}
-
-	def static setter(NamedElement field) {
-		"set" + field.simpleName.toFirstUpper
-	}
 
 	def void generateAccesors(MutableClassDeclaration clazz, extension TransformationContext context) {
 		generateGetter(clazz, context)
