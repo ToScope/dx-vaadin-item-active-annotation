@@ -2,6 +2,8 @@ package ditem.processor
 
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.NamedElement
+import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
 class DItemNamingConventions {
 	public static val prefix = "Prop"
@@ -13,7 +15,7 @@ class DItemNamingConventions {
 		return '''get«field.toFirstUpper»'''
 	}
 
-	def static String getter(MutableFieldDeclaration field) {
+	def static String getter(NamedElement field) {
 		return field.simpleName.getter
 	}
 
@@ -21,7 +23,7 @@ class DItemNamingConventions {
 		return '''set«field.toFirstUpper»'''
 	}
 
-	def static String setter(MutableFieldDeclaration field) {
+	def static String setter(NamedElement field) {
 		return field.simpleName.setter
 	}
 
@@ -33,15 +35,23 @@ class DItemNamingConventions {
 		field.type.name + item
 	}
 
-	def static String propertyName(MutableFieldDeclaration field) {
-		return '''_«field.simpleName»«prefix»'''
+	def static String propertyName(NamedElement field) {
+		return field.simpleName.propertyName
 	}
 
-	def static String propertyGetterName(MutableFieldDeclaration field) {
+	def static String referenceToPropertyName(TypeReference fieldRef) {
+		return '''«fieldRef»«prefix»'''
+	}
+
+	def static String propertyName(String field) {
+		return '''_«field»«prefix»'''
+	}
+
+	def static String propertyGetterName(NamedElement field) {
 		return '''get«suffix»«field.simpleName.toFirstUpper»«prefix»'''
 	}
 
-	def static String propertySetterName(MutableFieldDeclaration field) {
+	def static String propertySetterName(NamedElement field) {
 		return suffix + field.simpleName.setter + prefix
 	}
 }

@@ -26,7 +26,7 @@ annotation MetaModelClasses {
 
 class MetaModelClassesProcessor extends AbstractClassProcessor implements CodeGenerationParticipant<ClassDeclaration> {
 
-	val static prefix = "_8"
+	val static prefix = "_"
 
 	def getMetaClassName(ClassDeclaration annotatedClass) {
 		annotatedClass.package + annotatedClass.metaName
@@ -76,9 +76,28 @@ class MetaModelClassesProcessor extends AbstractClassProcessor implements CodeGe
 	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 		//		generateMetaModel(context, annotatedClass)
 		//		context.addWarning(annotatedClass, annotatedClass.getMetaClassName)
+		transformFieldClasses(context, annotatedClass)
+	}
+	
+	
+	def transformFieldClasses(extension TransformationContext context, MutableClassDeclaration annotatedClass) {
+			for (field : annotatedClass.declaredFields) {
+			val metaFieldClass = findClass(annotatedClass.getMetaClassName + "." + field.metaName)
+			metaFieldClass.implementedInterfaces = #[FieldReference.newTypeReference]
+			metaFieldClass.primarySourceElement = field
+			metaFieldClass.addField("type",[
+				type = String.newTypeReference
+				static  = true
+				final = true
+				initializer = '''"«field.type.name»"'''
+			])
+		}
 	}
 
 	def generateMetaModel(extension TransformationContext context, MutableClassDeclaration annotatedClass) {
+
+	
+
 		val metaClass = context.findClass(annotatedClass.getMetaClassName)
 
 		metaClass.addAnnotation(MetaModelOf.newAnnotationReference[set("value", annotatedClass.qualifiedName)])
