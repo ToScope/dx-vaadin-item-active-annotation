@@ -2,3 +2,5 @@
 /target/
 /src-gen/
 /src-test-gen/
+*._trace
+*.gitignore
