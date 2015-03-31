@@ -76,7 +76,6 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		return !isStatic
 	}
 
-
 	def void generateAccesors(MutableClassDeclaration clazz, extension TransformationContext context) {
 		generateGetter(clazz, context)
 		generateSetter(clazz, context)
@@ -225,7 +224,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	}
 
 	def String createPropertyInitializer(MutableClassDeclaration annotatedClass, TransformationContext context) {
-		var String propertyInitializer = "";
+		var String propertyInitializer = ""
 		for (field : annotatedClass.declaredFields.filter[generateProperty]) {
 			propertyInitializer += if(field.annotations.exists[it == Deep]) {
 				createPropertyReferenceInitializer(context, field)
@@ -237,11 +236,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	}
 
 	def String createDerivedPropertyInitializer(MutableClassDeclaration annotatedClass, TransformationContext context) {
-		var String propertyInitializer = "";
-		for (derivedMethod : annotatedClass.derivedMethods) {
-			propertyInitializer += 	createDerivedPropertyInitializer(context, derivedMethod)
-		}
-		return propertyInitializer;
+		return annotatedClass.derivedMethods.map[method|createDerivedPropertyInitializer(context, method)].join
 	}
 
 	/***				
