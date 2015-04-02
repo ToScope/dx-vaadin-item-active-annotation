@@ -107,7 +107,7 @@ class SerialVersionUIDProcessor extends AbstractClassProcessor implements CodeGe
 			]
 		}
 		
-		val TypeReference serialInterface = typeof(Serializable).newTypeReference
+		val TypeReference serialInterface = Serializable.newTypeReference
 		annotatedClass.addInterface(serialInterface)
 	}
 

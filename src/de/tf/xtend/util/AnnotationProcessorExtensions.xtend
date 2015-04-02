@@ -4,9 +4,12 @@ import java.io.PrintWriter
 import java.io.StringWriter
 import java.lang.annotation.Annotation
 import java.util.LinkedHashSet
+import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
+import org.eclipse.xtend.lib.macro.declaration.MutableTypeDeclaration
 import org.eclipse.xtend.lib.macro.declaration.Type
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
@@ -24,31 +27,51 @@ class AnnotationProcessorExtensions {
 		classDeclaration.implementedInterfaces = implementedInterfaces
 	}
 
-	static def getPackage(Type it) {
+	def static getPackage(Type it) {
 		qualifiedName.remove(simpleName)
 	}
 
-	static def getPackage(TypeReference it) {
+	def static getPackage(TypeReference it) {
 		name.remove(simpleName)
 	}
 
-	static def boolean operator_notEquals(MutableFieldDeclaration ref, Class<? extends Annotation> annotation) {
+	def static boolean operator_notEquals(MutableFieldDeclaration ref, Class<? extends Annotation> annotation) {
 		return !operator_equals(ref, annotation)
 	}
 
-	static def boolean operator_equals(MutableFieldDeclaration ref, Class<? extends Annotation> annotation) {
+	def static boolean operator_equals(MutableFieldDeclaration ref, Class<? extends Annotation> annotation) {
 		return ref.annotations.exists[it == annotation]
 	}
 
-	static def boolean operator_equals(AnnotationReference ref, Class<? extends Annotation> annotation) {
+	def static boolean operator_equals(AnnotationReference ref, Class<? extends Annotation> annotation) {
 		return ref.annotationTypeDeclaration.simpleName == annotation.simpleName
 	}
 	
-	static def String getStackTraceAsString(Exception e){
+	def static String getStackTraceAsString(Exception e){
 		val writer = new StringWriter()
 		val printer = new PrintWriter(writer)
 		e.printStackTrace(printer)
 		return writer.toString
 	}
+	
+		/***
+	 * Hack to add an import for a type
+	 */
+	def static void registerType(MutableTypeDeclaration mutableClass, TypeReference typeReference,
+		extension TransformationContext context) {
+		mutableClass.addAnnotation(Import.newAnnotationReference[setClassValue("value", typeReference)])
+	}
+	
+		/***
+	 * Only adds the method, if there isn't already a method with this name
+	 * @See MutableMethodDeclaration#declaredMethods
+	 */
+	def static  MutableMethodDeclaration addSafeMethod(MutableTypeDeclaration mutableTypeDeclaration, String name,
+		(MutableMethodDeclaration)=>void initializer) {
+		if (!mutableTypeDeclaration.declaredMethods.exists[it.simpleName == name]) {
+			mutableTypeDeclaration.addMethod(name, initializer)
+		}
+	}
+	
 
 }
