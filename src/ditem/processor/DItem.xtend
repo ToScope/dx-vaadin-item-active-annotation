@@ -120,29 +120,6 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		}
 	}
 
-	def void generatePropertyChangeSupport(MutableClassDeclaration clazz, extension TransformationContext context) {
-		// generated field to hold listeners, addPropertyChangeListener() and removePropertyChangeListener() 
-		val changeSupportType = PropertyChangeSupport.newTypeReference
-		clazz.addField("_propertyChangeSupport") [
-			type = changeSupportType
-			initializer = '''new «changeSupportType»(this)'''
-			primarySourceElement = clazz
-		]
-
-		val propertyChangeListener = PropertyChangeListener.newTypeReference
-		clazz.addMethod("addPropertyChangeListener") [
-			addParameter("listener", propertyChangeListener)
-			body = '''this._propertyChangeSupport.addPropertyChangeListener(listener);'''
-			primarySourceElement = clazz
-		]
-		clazz.addMethod("removePropertyChangeListener") [
-			addParameter("listener", propertyChangeListener)
-			body = '''this._propertyChangeSupport.removePropertyChangeListener(listener);'''
-			primarySourceElement = clazz
-		]
-		clazz.addInterface(PropertyChangeEmitter.newTypeReference)
-	}
-
 	def deligatePropertyChangeListener(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 		for (method : annotatedClass.declaredMethods) {
 			if(method.simpleName.startsWith("set") && method.visibility == PUBLIC) {
@@ -277,6 +254,29 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 			«propertyName» = new «objectPropertyType»(«type.wrapperIfPrimitive».class, «beanName»::«getter», «beanName»::«setter», "«simpleName»");
 		'''
 	}
+	
+	def static void generatePropertyChangeSupport(MutableClassDeclaration clazz, extension TransformationContext context) {
+		// generated field to hold listeners, addPropertyChangeListener() and removePropertyChangeListener() 
+		val changeSupportType = PropertyChangeSupport.newTypeReference
+		clazz.addField("_propertyChangeSupport") [
+			type = changeSupportType
+			initializer = '''new «changeSupportType»(this)'''
+			primarySourceElement = clazz
+		]
+
+		val propertyChangeListener = PropertyChangeListener.newTypeReference
+		clazz.addMethod("addPropertyChangeListener") [
+			addParameter("listener", propertyChangeListener)
+			body = '''this._propertyChangeSupport.addPropertyChangeListener(listener);'''
+			primarySourceElement = clazz
+		]
+		clazz.addMethod("removePropertyChangeListener") [
+			addParameter("listener", propertyChangeListener)
+			body = '''this._propertyChangeSupport.removePropertyChangeListener(listener);'''
+			primarySourceElement = clazz
+		]
+		clazz.addInterface(PropertyChangeEmitter.newTypeReference)
+	}
 
 	def addVaadinPropertie(MutableFieldDeclaration field, extension TransformationContext context, MutableClassDeclaration dItem) {
 		val objectPropertyType = DItemProperty.newTypeReference(field.type)
@@ -314,5 +314,6 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 			primarySourceElement = field
 		]
 	}
+	
 
 }

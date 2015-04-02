@@ -29,18 +29,24 @@ class MetaModelClassesProcessor  {
 	def static getMetaName(NamedElement field) {
 		field.simpleName.metaName
 	}
+	
+	def static String metaClassName(ClassDeclaration it, FieldDeclaration field ){
+		return qualifiedName + "." + field.metaName
+	}
 
-	def static registerMetaClasses(ClassDeclaration clazz, extension RegisterGlobalsContext context) {
-		registerClass(clazz.getMetaClassName)
-		for (field : clazz.declaredFields) {
-			registerClass(clazz.getMetaClassName + "." + field.metaName)
+	def static registerMetaClasses(ClassDeclaration it, extension RegisterGlobalsContext context) {
+		registerClass(getMetaClassName)
+		for (field : declaredFields) {
+			registerClass(metaClassName(field))
 		}
 	}
 	
 	
 	def static transformFieldClasses(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
+		
 			for (field : annotatedClass.declaredFields) {
-			val metaFieldClass = findClass(annotatedClass.getMetaClassName + "." + field.metaName)
+			val metaFieldClass = findClass(annotatedClass.metaClassName(field))
+			metaFieldClass.final = true
 			metaFieldClass.implementedInterfaces = #[FieldReference.newTypeReference]
 			metaFieldClass.primarySourceElement = field
 			metaFieldClass.addField("type",[
@@ -49,6 +55,7 @@ class MetaModelClassesProcessor  {
 				final = true
 				initializer = '''"«field.type.name»"'''
 			])
+			metaFieldClass.docComment = "FieldReference for declaring DerivedProperties"
 		}
 	}
 
