@@ -7,15 +7,13 @@
  *******************************************************************************/
 package eventlistener
 
-import ditem.processor.DItem
-import metamodel.Deep
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import java.util.List
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.junit.Test
 
-import static extension testutil.CompilerTestestExtensions.*
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
-import java.util.List
+import static testutil.CompilerTestestExtensions.*
 
 class EventListenerTest {
 

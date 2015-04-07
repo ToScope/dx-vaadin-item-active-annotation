@@ -1,6 +1,6 @@
 package annotation;
 
-import metamodel.classes.FieldReference;
+import ditem.ref.FieldReference;
 
 public class RefMock implements FieldReference{
 

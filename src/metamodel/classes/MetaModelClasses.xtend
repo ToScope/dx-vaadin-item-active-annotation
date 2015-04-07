@@ -19,6 +19,7 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
 import metamodel.flat.MetaModel
 import java.util.List
+import ditem.ref.FieldReference
 
 @Active(MetaModelClassesProcessor)
 annotation MetaModelClasses {

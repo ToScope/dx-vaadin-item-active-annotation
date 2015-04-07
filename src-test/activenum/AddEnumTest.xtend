@@ -9,8 +9,6 @@ package activenum
 
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.junit.Test
-import property.VaadinProperties
-import activenum.AddEnum
 
 class VaadinPropertiesTest {
 

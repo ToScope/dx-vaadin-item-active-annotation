@@ -54,7 +54,7 @@ class AnnotationProcessorExtensions {
 		return writer.toString
 	}
 	
-		/***
+    /***
 	 * Hack to add an import for a type
 	 */
 	def static void registerType(MutableTypeDeclaration mutableClass, TypeReference typeReference,

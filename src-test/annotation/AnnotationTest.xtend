@@ -7,13 +7,11 @@
  *******************************************************************************/
 package annotation
 
-import ditem.processor.DItem
-import metamodel.Deep
+import ditem.property.Derived
 import org.eclipse.xtend.core.compiler.batch.XtendCompilerTester
 import org.junit.Test
 
 import static extension testutil.CompilerTestestExtensions.*
-import ditem.property.Derived
 
 class AnnotationTest {
 
