@@ -1,14 +1,11 @@
 package ditem.processor
 
 import org.eclipse.xtend.lib.macro.RegisterGlobalsContext
-import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.FieldDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.NamedElement
 
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.getPackage
-import ditem.ref.FieldReference
 
 class MetaModelClassesProcessor  {
 
@@ -42,21 +39,6 @@ class MetaModelClassesProcessor  {
 	}
 	
 	
-	def static transformFieldClasses(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
-		
-			for (field : annotatedClass.declaredFields) {
-			val metaFieldClass = findClass(annotatedClass.metaClassName(field))
-			metaFieldClass.final = true
-			metaFieldClass.implementedInterfaces = #[FieldReference.newTypeReference]
-			metaFieldClass.primarySourceElement = field
-			metaFieldClass.addField("type",[
-				type = String.newTypeReference
-				static  = true
-				final = true
-				initializer = '''"«field.type.name»"'''
-			])
-			metaFieldClass.docComment = "FieldReference for declaring DerivedProperties"
-		}
-	}
+
 
 }
