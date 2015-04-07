@@ -16,31 +16,23 @@ class DItemProperty<T> extends AbstractProperty<T> implements BeanItemProperty<T
      */
 	final Class<T> type
 
-	new(T value, Class<T> type, ()=>T getter, (T)=>void setter, String id) {
-		this(value, type, getter, setter, id, false)
+	new(Class<T> type, ()=>T getter, (T)=>void setter, String id) {
+		this( type, getter, setter, id, false)
 	}
 
-	new(T value, Class<T> type, ()=>T getter, String id) {
-		this(value, type, getter, null, id, false)
+	new( Class<T> type, ()=>T getter, String id) {
+		this( type, getter, null, id, false)
 		readOnly = true
 	}
 
-	new(T value, Class<T> type, ()=>T getter, (T)=>void setter, String id, boolean notifyOnChange) {
+	new(Class<T> type, ()=>T getter, (T)=>void setter, String id, boolean notifyOnChange) {
 		this.getter = getter
 		this.setter = setter
-		this.value = value
 		this.type = type
 		this.id = id
 		this.notifyOnChange = notifyOnChange
 	}
 
-	new(T value, ()=>T getter, (T)=>void setter, String id, boolean notifyOnChange) {
-		this(value, value.class as Class<T>, getter, setter, id, notifyOnChange)
-	}
-
-	new(T value, ()=>T getter, (T)=>void setter, String id) {
-		this(value, value.class as Class<T>, getter, setter, id, false)
-	}
 
 	override getType() {
 		return type
