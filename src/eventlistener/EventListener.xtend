@@ -9,14 +9,12 @@ import org.eclipse.xtend.lib.macro.AbstractFieldProcessor
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
-import org.eclipse.xtend.lib.macro.declaration.MutableMethodDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableTypeDeclaration
 import org.eclipse.xtend.lib.macro.declaration.ResolvedMethod
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
 
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.operator_equals
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.addSafeMethod
-import static  de.tf.xtend.util.AnnotationProcessorExtensions.registerType
 
 /***
  * Adds remove, add and initializer to listener
@@ -61,7 +59,6 @@ class EventListenerProcessor extends AbstractFieldProcessor {
 
 			val fieldName = field.simpleName
 			val listType = LinkedList.newTypeReference
-			registerType(mutableClass, listType, context)
 
 			addAddListenerMethod(mutableClass, listener, fieldName, listType)
 
@@ -90,7 +87,7 @@ class EventListenerProcessor extends AbstractFieldProcessor {
 			body = [
 				'''
 					if(this.«fieldName» == null){
-						this.«fieldName» = new «listType»<>();
+						this.«fieldName» = new «listType.type.qualifiedName»<>();
 					}
 					this.«fieldName».add(listener);
 				'''
