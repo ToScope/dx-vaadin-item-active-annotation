@@ -1,9 +1,9 @@
 package ditem.processor
 
-import org.eclipse.xtend.lib.macro.declaration.ClassDeclaration
 import org.eclipse.xtend.lib.macro.declaration.MutableFieldDeclaration
 import org.eclipse.xtend.lib.macro.declaration.NamedElement
 import org.eclipse.xtend.lib.macro.declaration.TypeReference
+import org.eclipse.xtend.lib.macro.declaration.Type
 
 class DItemNamingConventions {
 	public static val prefix = "Prop"
@@ -19,6 +19,10 @@ class DItemNamingConventions {
 	def static String getter(NamedElement field) {
 		return field.simpleName.getter
 	}
+	
+	def static String getterOverBean(NamedElement field) {
+		return beanName+"."+field.getter
+	}
 
 	def static String setter(String field) {
 		return '''set«field.toFirstUpper»'''
@@ -28,11 +32,19 @@ class DItemNamingConventions {
 		return field.simpleName.setter
 	}
 
-	def static getDItemClassName(ClassDeclaration annotatedClass) {
+	def static getDItemQualifiedName(TypeReference typeReference) {
+		typeReference.type.getDItemQualifiedName
+	}
+	
+	def static getDItemName(TypeReference typeReference) {
+		typeReference.type.simpleName + item
+	}
+
+	def static getDItemQualifiedName(Type annotatedClass) {
 		annotatedClass.qualifiedName + item
 	}
 
-	def static getDItemClassName(MutableFieldDeclaration field) {
+	def static getDItemQualifiedName(MutableFieldDeclaration field) {
 		field.type.name + item
 	}
 
