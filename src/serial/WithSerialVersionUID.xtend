@@ -49,13 +49,15 @@ class SerialVersionUIDProcessor extends AbstractClassProcessor implements CodeGe
 		implementedInterfaces.map[name].sortBy[it].forEach[out += it]
 		declaredFields.sortBy[simpleName].forEach[out += it]
 		declaredMethods.sortBy[simpleName].forEach[out += it]
+		
+		
 		out.flush()
 		return hash(bout.toByteArray())
 	}
 
 	def static long hash(byte[] bytes) {
-		val digest = MessageDigest.getInstance("SHA");
-		val byte[] digested = digest.digest(bytes);
+		val digest = MessageDigest.getInstance("SHA")
+		val byte[] digested = digest.digest(bytes)
 		return new BigInteger(1, digested).longValue.abs
 	}
 
