@@ -3,6 +3,7 @@ package de.tf.xtend.util
 import java.io.PrintWriter
 import java.io.StringWriter
 import java.lang.annotation.Annotation
+import java.util.Collection
 import java.util.LinkedHashSet
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.AnnotationReference
@@ -16,7 +17,13 @@ import org.eclipse.xtend.lib.macro.declaration.TypeReference
 import static extension de.tf.xtend.util.StringUtils.remove
 
 class AnnotationProcessorExtensions {
-
+	
+	final  TransformationContext context
+	
+	new(TransformationContext context){
+		this.context = context
+	}
+	
 	/***
 	 * Adds a Interface to the given classDeclaration. It's no problem to add an interface twice. Interface order will be preserved.
 	 */
@@ -46,32 +53,42 @@ class AnnotationProcessorExtensions {
 	def static boolean operator_equals(AnnotationReference ref, Class<? extends Annotation> annotation) {
 		return ref.annotationTypeDeclaration.simpleName == annotation.simpleName
 	}
-	
-	def static String getStackTraceAsString(Exception e){
+
+	def static String getStackTraceAsString(Exception e) {
 		val writer = new StringWriter()
 		val printer = new PrintWriter(writer)
 		e.printStackTrace(printer)
 		return writer.toString
 	}
-	
-    /***
+
+	/***
 	 * Hack to add an import for a type
 	 */
-	def static void registerType(MutableTypeDeclaration mutableClass, TypeReference typeReference,
-		extension TransformationContext context) {
+	def static void registerType(MutableTypeDeclaration mutableClass, TypeReference typeReference, extension TransformationContext context) {
 		mutableClass.addAnnotation(Import.newAnnotationReference[setClassValue("value", typeReference)])
 	}
-	
-		/***
+
+	/***
 	 * Only adds the method, if there isn't already a method with this name
 	 * @See MutableMethodDeclaration#declaredMethods
 	 */
-	def static  MutableMethodDeclaration addSafeMethod(MutableTypeDeclaration mutableTypeDeclaration, String name,
+	def static MutableMethodDeclaration addSafeMethod(MutableTypeDeclaration mutableTypeDeclaration, String name,
 		(MutableMethodDeclaration)=>void initializer) {
-		if (!mutableTypeDeclaration.declaredMethods.exists[it.simpleName == name]) {
+		if(!mutableTypeDeclaration.declaredMethods.exists[it.simpleName == name]) {
 			mutableTypeDeclaration.addMethod(name, initializer)
 		}
 	}
+
+	def static  isCollection(extension TransformationContext context, MutableFieldDeclaration field) {
+		return Collection.newTypeReference.isAssignableFrom(field.type)
+	}
 	
+	def  isCollection(MutableFieldDeclaration field) {
+		return isCollection(context, field)
+	}
+	
+	def static isPrimitiveOrString(TypeReference it) {
+		primitive || it.type.simpleName == String.simpleName
+	}
 
 }

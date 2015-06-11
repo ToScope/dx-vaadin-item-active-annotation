@@ -33,6 +33,7 @@ import static extension de.tf.xtend.util.AnnotationProcessorExtensions.addInterf
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.getStackTraceAsString
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.operator_equals
 import static extension de.tf.xtend.util.AnnotationProcessorExtensions.operator_notEquals
+import static extension de.tf.xtend.util.AnnotationProcessorExtensions.isPrimitiveOrString
 import static extension ditem.processor.DItemNamingConventions.*
 import static extension ditem.processor.MetaModelClassesProcessor.metaClassName
 import static extension serial.SerialVersionUIDProcessor.addSerialVersionUID
@@ -40,6 +41,8 @@ import ditem.ref.FieldType
 import java.util.stream.Collectors
 import java.util.List
 import ditem.container.DItemContainer
+import de.tf.xtend.util.AnnotationProcessorExtensions
+import metamodel.SkipInToString
 
 /***
  * Generates an additional DItem which helps to access and bind this model with a Vaadin UI. For every field a appropriate Vaadin Property 
@@ -57,6 +60,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	val warning = "<h1>Generated Class, Don't Change!</h1><br>For modifying open "
 
 	extension TransformationContext context
+	extension AnnotationProcessorExtensions processorExtensions
 	MutableClassDeclaration dItem
 	MutableClassDeclaration annotatedClass
 
@@ -68,10 +72,10 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	override doTransform(MutableClassDeclaration annotatedClass, extension TransformationContext context) {
 		this.context = context
 		this.annotatedClass = annotatedClass
+		this.processorExtensions = new AnnotationProcessorExtensions(context)
 		dItem = context.findClass(annotatedClass.getDItemQualifiedName)
 
 		try {
-			annotatedClass.addMissingTostring()
 			transformFieldClasses()
 			generateDItem()
 			generateAccesors()
@@ -91,16 +95,12 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		return !isStatic && !annotatedClass.declaredMethods.exists[m|m.simpleName == getter]
 	}
 
-	def private boolean generateProperty(MutableFieldDeclaration it, TransformationContext context) {
+	def private boolean generateProperty(MutableFieldDeclaration it) {
 		return !isStatic
 	}
 
-	def private isCollection(MutableFieldDeclaration field) {
-		return Collection.newTypeReference.isAssignableFrom(field.type)
-	}
-
-	def private boolean generateVaadinProperty(MutableFieldDeclaration it, TransformationContext context) {
-		return generateProperty(context) && !isCollection
+	def private boolean generateVaadinProperty(MutableFieldDeclaration it) {
+		return generateProperty() && !isCollection
 	}
 
 	def private void generateAccesors() {
@@ -137,6 +137,13 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		}
 	}
 
+	/***
+	 * <pre>
+	 *   public String getLastName() {
+	 *   	return this.lastName;
+	 *   }
+	 * </pre>
+	 */
 	def private void generateGetter(MutableClassDeclaration clazz) {
 		for (field : clazz.declaredFields.filter[generateGetter(it)]) {
 			clazz.addMethod(field.getter) [
@@ -156,10 +163,22 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		}
 	}
 
+	/***
+	 * List all methods which are annotated with Derived
+	 */
 	def private getDerivedMethods(MutableClassDeclaration classDeclaration) {
 		return classDeclaration.declaredMethods.filter[it.annotations.exists[it == Derived]]
 	}
 
+	/***
+	 * <pre>
+	 *   public void setLastName(final String lastName) {
+	 *      String _oldValue = this.lastName;
+	 *      this.lastName = lastName;
+	 *      _propertyChangeSupport.firePropertyChange("lastName", _oldValue, lastName);
+	 * }
+	 * </pre>
+	 */
 	def private void generateSetter(MutableClassDeclaration clazz) {
 		for (fild : clazz.declaredFields.filter[generateSetter(it)]) {
 			clazz.addMethod(fild.setter) [
@@ -200,7 +219,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	def private generateDItem() {
 		dItem.docComment = warning + annotatedClass.simpleName + ".java <br>" + annotatedClass.docComment
 
-		dItem.addToString([propertyGetterName])
+//		dItem.addToString([propertyGetterName])
 		addVaadinProperties()
 		addDerivedProperties()
 		addConstructor()
@@ -234,10 +253,10 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	}
 
 	def private addToString(MutableClassDeclaration mutableClass, (MutableFieldDeclaration)=>String getter) {
-		val String toString = annotatedClass.propertyFields.map['''"«it.simpleName»=" + «getter.apply(it)»()'''].join(' +", "+ ');
+		val String fieldAsString = annotatedClass.propertyFields.filter[it != SkipInToString].map['''"«it.simpleName»:" + «getter.apply(it)»()'''].join(' +", "+ ');
 		mutableClass.addMethod("toString", [
 			returnType = String.newTypeReference
-			body = '''return "«mutableClass.simpleName»" + "[«IF !toString.isEmpty»" + «toString» + "«ENDIF»]";'''
+			body = '''return "«mutableClass.simpleName»" + "{«IF !fieldAsString.isEmpty»" + «fieldAsString» + "«ENDIF»}";'''
 		])
 	}
 
@@ -256,9 +275,12 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 			}
 		}
 	}
-	
-	def private propertyFields(MutableClassDeclaration  mutableClassDeclaration ){
-		return annotatedClass.declaredFields.filter[generateProperty(context)]
+
+	/***
+	 * @Return all fields which needs a generated Property
+	 */
+	def private propertyFields(MutableClassDeclaration mutableClassDeclaration) {
+		return annotatedClass.declaredFields.filter[generateProperty()]
 	}
 
 	def private addConstructor() {
@@ -267,7 +289,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 			«createPropertyInitializer()»
 			«createDerivedPropertyInitializer()»
 			«createCollectionPropertyInitializer()»
-			initBeanProperties(«annotatedClass.declaredFields.filter[it != Deep && generateVaadinProperty(context)].map[propertyName].join(", ")»);
+			initBeanProperties(«annotatedClass.declaredFields.filter[it != Deep && generateVaadinProperty].map[propertyName].join(", ")»);
 		''';
 		dItem.addConstructor [
 			addParameter(beanName, annotatedClass.newTypeReference)
@@ -280,7 +302,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	 */
 	def private String createPropertyInitializer() {
 		var String propertyInitializer = ""
-		for (field : annotatedClass.declaredFields.filter[generateVaadinProperty(context)]) {
+		for (field : annotatedClass.declaredFields.filter[generateVaadinProperty()]) {
 			propertyInitializer += if(field.annotations.exists[it == Deep]) {
 				createPropertyReferenceInitializer(field)
 			} else {
@@ -296,7 +318,7 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	def private String createCollectionPropertyInitializer() {
 		var String propertyInitializer = ""
 		for (field : annotatedClass.declaredFields.filter[isCollection]) {
-			val propertyType = field.listType
+			val propertyType = field.listValueType
 			var popertyListType = PropertyList.newTypeReference(propertyType)
 
 			var dListItemName = propertyType.getDItemName
@@ -317,6 +339,11 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 		return propertyInitializer;
 	}
 
+	/***<pre>
+	 * for(method: mericedMethods){				
+	 *   _derivedPropN = new DItemProperty<String>(String.class, bean::getLastName, bean::setLastName, "atrributeName");
+	 * }</pre>
+	 */
 	def private String createDerivedPropertyInitializer() {
 		return annotatedClass.derivedMethods.map[method|createDerivedPropertyInitializer(method)].join
 	}
@@ -415,24 +442,24 @@ class DItemProcessor extends AbstractClassProcessor implements CodeGenerationPar
 	/***
 	 *  private final PropertyList<Address> _addresseProp;
 	 */
-	def private addVaadinCollection(MutableFieldDeclaration field) {
-
-		if(field.listType.primitiveOrString) {
-			val propertyType = PropertyList.newTypeReference(field.listType)
-			dItem.addPropertyFieldAndGetter(field, propertyType)
+	def private addVaadinCollection(MutableFieldDeclaration list) {
+		val fieldType = list.listValueType
+		if(list.listValueType.primitiveOrString) {
+			val propertyType = PropertyList.newTypeReference(fieldType)
+			dItem.addPropertyFieldAndGetter(list, propertyType)
 		} else {
-			val propertyType = DItemContainer.newTypeReference(field.listType, field.listType.getDItemQualifiedName.newTypeReference)
-			dItem.addPropertyFieldAndGetter(field, propertyType)
+			val propertyType = DItemContainer.newTypeReference(fieldType, fieldType.getDItemQualifiedName.newTypeReference)
+			dItem.addPropertyFieldAndGetter(list, propertyType)
 		}
-//		val propertyType = if (field.type.primitive) PropertyList.newTypeReference(field.listType) else DItemPropertyList.newTypeReference(field.listType.getDItemQualifiedName.newTypeReference)
 	}
 
-	def private isPrimitiveOrString(TypeReference it) {
-		primitive || it.type.simpleName == String.simpleName
-	}
-
-	def private static listType(MutableFieldDeclaration field) {
-		field.type.actualTypeArguments.head
+	/***
+	 * Returns the value type of a generic list.
+	 * @Param list: field with the type <b>List&lt;Integer&gt;</b>
+	 * @Returns List&lt;Integer&gt; &rArr; Integer 
+	 */
+	def private static listValueType(MutableFieldDeclaration list) {
+		list.type.actualTypeArguments.head
 	}
 
 	def private addPropertyFieldAndGetter(MutableClassDeclaration annotatedClass, NamedElement field, TypeReference objectPropertyType) {

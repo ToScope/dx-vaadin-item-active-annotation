@@ -3,8 +3,8 @@
         <wb-resource deploy-path="/" source-path="/src-test-gen"/>
         <wb-resource deploy-path="/" source-path="/src"/>
         <wb-resource deploy-path="/" source-path="/src-test"/>
-        <wb-resource deploy-path="/" source-path="/src-gen"/>
         <wb-resource deploy-path="/" source-path="/target/xtend-gen/main"/>
         <wb-resource deploy-path="/" source-path="/xtend-gen"/>
+        <wb-resource deploy-path="/" source-path="/src-gen"/>
     </wb-module>
 </project-modules>
